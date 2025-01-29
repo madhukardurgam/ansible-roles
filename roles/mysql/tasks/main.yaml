@@ -1,0 +1,34 @@
+- name: install python libraries
+  ansible.builtin.pip:
+    name: "{{ item }}"
+    executable: pip3.9
+  loop:
+  - PyMySQL
+  - cryptography
+
+- name: mysql-server installation
+  ansible.builtin.package:
+    name: mysql-server
+    state: installed
+
+- name: start and run mysql service
+  ansible.builtin.service:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: connect to mysql-server
+  community.mysql.mysql_info:
+    login_user: root
+    login_password: ExpenseApp@1
+    login_host: database.durgam.online
+  register: mysql_info
+  ignore_errors: true
+
+- name: print the output
+  ansible.builtin.debug:
+    msg: "mysql_info :{{ mysql_info }}"
+
+- name: setuproot password
+  ansible.builtin.command: "mysql_secure_installation --set-root-pass ExpenseApp@1"
+  when: mysql_info.failed is true
